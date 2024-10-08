@@ -1,4 +1,6 @@
-vim.cmd('let g:netrw_lifestyle = 3')
+vim.g.netrw_banner = 0
+-- vim.g.netrw_banner_text = "Welcome to Neovim!"
+-- vim.g.netrw_liststyle = 3
 
 local opt = vim.opt
 
