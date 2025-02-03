@@ -18,12 +18,35 @@ return {
         "neovim/nvim-lspconfig",
         dependencies = {
             "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/nvim-cmp",
             "williamboman/mason.nvim",
             "williamboman/mason-lspconfig.nvim",
         },
         config = function()
             local lspconfig = require("lspconfig")
+            local cmp = require("cmp")
             local cmp_nvim_lsp = require("cmp_nvim_lsp")
+            
+            -- Setup nvim-cmp
+            cmp.setup({
+                snippet = {
+                    expand = function(args)
+                        require("luasnip").lsp_expand(args.body)
+                    end,
+                },
+                mapping = {
+                    ['<C-n>'] = cmp.mapping.select_next_item(),
+                    ['<C-p>'] = cmp.mapping.select_prev_item(),
+                    ['<Tab>'] = cmp.mapping.complete(),
+                    ['<C-e>'] = cmp.mapping.close(),
+                    ['<CR>'] = cmp.mapping.confirm({ select = true}), 
+                },
+                sources = {
+                    { name = 'nvim_lsp' },
+                    { name = 'buffer' },
+                    { name = 'path' },        
+                },
+            })
 
             local on_attach = function(_, bufnr)
                 -- Enable completion triggered by <c-x><c-o>

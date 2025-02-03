@@ -35,3 +35,5 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 vim.api.nvim_set_keymap("n", "gg", "gg0" , { noremap = true, silent = true })
 
+vim.api.nvim_set_keymap("n", "<leader>m", [[:call append(line('.'), ['if __name__ == "__main__":', '    ']) | normal! j^<CR>]], { noremap = true, silent = true})
+
