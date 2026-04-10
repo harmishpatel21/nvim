@@ -1,48 +1,55 @@
 vim.g.netrw_banner = 0
--- vim.g.netrw_banner_text = "Welcome to Neovim!"
 -- vim.g.netrw_liststyle = 3
 
 local opt = vim.opt
 
 -- line numbers
-opt.relativenumber = true
 opt.number = true
+opt.relativenumber = true
 opt.cursorline = true
 
 -- tabs & indentation
 opt.tabstop = 4
-opt.softtabstop = 4
 opt.shiftwidth = 4
+opt.softtabstop = 4
 opt.expandtab = true
 opt.autoindent = true
-
-opt.smartindent = true 
+opt.smartindent = true
 
 -- line wrapping
 opt.wrap = false
 
-opt.hlsearch = false 
-opt.incsearch = true 
+-- search
+opt.incsearch = true
+opt.hlsearch = true
 
-opt.termguicolors = true 
+-- appearance
+opt.termguicolors = true
+opt.background = "dark"
+opt.signcolumn = "yes"
 
+-- scroll offset
+opt.scrolloff = 20
 
-opt.scrolloff = 20 
-opt.signcolumn = "yes" 
+-- backspace
+opt.backspace = "indent,eol,start"
 
--- serach settings
+-- search settings
 opt.ignorecase = true
 opt.smartcase = true
 
 -- clipboard
-opt.clipboard:append('unnamedplus')
+opt.clipboard:append("unnamedplus")
 
 -- split windows
 opt.splitright = true
 opt.splitbelow = true
 
+-- font
+vim.g.have_nerd_font = true
 
-vim.g.have_nerd_font = false
 opt.colorcolumn = "80"
 
-
+-- utf8
+opt.encoding = "utf-8"
+vim.o.fileencoding = "utf-8"

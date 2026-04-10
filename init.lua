@@ -1,3 +1,1 @@
-require('heisenberg.core')
-require('heisenberg.lazy')
-
+require('heisenberg') 

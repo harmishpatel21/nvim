@@ -1,86 +1,87 @@
 return {
-    {
-        "williamboman/mason.nvim",
-        config = function()
-            require("mason").setup()
-        end
-    },
-    {
-        "williamboman/mason-lspconfig.nvim",
-        dependencies = { "williamboman/mason.nvim" },
-        config = function()
-            require("mason-lspconfig").setup({
-                ensure_installed = { "pyright" }
-            })
-        end
-    },
-    {
-        "neovim/nvim-lspconfig",
-        dependencies = {
-            "hrsh7th/cmp-nvim-lsp",
-            "hrsh7th/nvim-cmp",
-            "williamboman/mason.nvim",
-            "williamboman/mason-lspconfig.nvim",
+  setup = function()
+    local cmp = require("cmp")
+    local lspconfig = require("lspconfig")
+
+    -- LSP capabilities (for nvim-cmp)
+    local capabilities = vim.lsp.protocol.make_client_capabilities()
+    capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
+
+    -- On_attach function for LSP servers
+    local on_attach = function(client, bufnr)
+      -- Enable completion
+      cmp.setup.buffer({
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+        }, {
+          { name = "buffer" },
+          { name = "path" },
+        }),
+      })
+
+      -- Keymaps for LSP
+      local function map(mode, lhs, rhs, opts)
+        vim.keymap.set(mode, lhs, rhs, { silent = true, noremap = true, buffer = bufnr, desc = opts.desc })
+      end
+
+      map("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
+      map("n", "gD", vim.lsp.buf.declaration, { desc = "Go to declaration" })
+      map("n", "gr", vim.lsp.buf.references, { desc = "Go to references" })
+      map("n", "gi", vim.lsp.buf.implementation, { desc = "Go to implementation" })
+      map("n", "K", vim.lsp.buf.hover, { desc = "Hover documentation" })
+      map("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol" })
+      map("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
+      map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, { desc = "Format document" })
+    end
+
+    -- Manual LSP server setup (for older mason-lspconfig)
+    lspconfig.pyright.setup({
+      capabilities = capabilities,
+      on_attach = on_attach,
+    })
+
+    lspconfig.lua_ls.setup({
+      capabilities = capabilities,
+      on_attach = on_attach,
+      settings = {
+        Lua = {
+          runtime = {
+            version = "Lua51",
+          },
+          diagnostics = {
+            globals = { "vim" },
+          },
+          workspace = {
+            library = vim.api.nvim_get_runtime_file("lua", true),
+            checkThirdParty = false,
+          },
+          telemetry = {
+            enable = false,
+          },
         },
-        config = function()
-            local lspconfig = require("lspconfig")
-            local cmp = require("cmp")
-            local cmp_nvim_lsp = require("cmp_nvim_lsp")
-            
-            -- Setup nvim-cmp
-            cmp.setup({
-                snippet = {
-                    expand = function(args)
-                        require("luasnip").lsp_expand(args.body)
-                    end,
-                },
-                mapping = {
-                    ['<C-n>'] = cmp.mapping.select_next_item(),
-                    ['<C-p>'] = cmp.mapping.select_prev_item(),
-                    ['<Tab>'] = cmp.mapping.complete(),
-                    ['<C-e>'] = cmp.mapping.close(),
-                    ['<CR>'] = cmp.mapping.confirm({ select = true}), 
-                },
-                sources = {
-                    { name = 'nvim_lsp' },
-                    { name = 'buffer' },
-                    { name = 'path' },        
-                },
-            })
+      },
+    })
 
-            local on_attach = function(_, bufnr)
-                -- Enable completion triggered by <c-x><c-o>
-                -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-                -- Mappings.
-                local bufopts = {}
-                vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-                vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-                vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
-                vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-                vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-                vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-                vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
-                vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-                vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-            end
-
-            local capabilities = cmp_nvim_lsp.default_capabilities()
-
-            -- Setup lspconfig.
-            lspconfig.pyright.setup({
-                on_attach = on_attach,
-                capabilities = capabilities,
-                settings = {
-                    python = {
-                        analysis = {
-                            autoSearchPaths = true,
-                            diagnosticMode = "workspace",
-                            useLibraryCodeForTypes = true
-                        }
-                    }
-                }
-            })
-        end
-    }
-}
+    -- nvim-cmp setup (moved here to ensure it's available for on_attach)
+    cmp.setup({
+      snippet = {
+        expand = function(args)
+          vim.snippet.expand(args.body)
+        end,
+      },
+      mapping = cmp.mapping.preset.insert({
+        ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+        ["<C-f>"] = cmp.mapping.scroll_docs(4),
+        ["<C-Space>"] = cmp.mapping.complete(),
+        ["<C-e>"] = cmp.mapping.abort(),
+        ["<CR>"] = cmp.mapping.confirm({ select = true }),
+      }),
+      sources = cmp.config.sources({
+        { name = "nvim_lsp" },
+      }, {
+        { name = "buffer" },
+        { name = "path" },
+      }),
+    })
+  end,
+} 
